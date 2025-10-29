@@ -1,15 +1,15 @@
-import { Client, GatewayIntentBits } from 'discord.js';
+const { Client, GatewayIntentBits } = require('discord.js');
 
-const CLIENT_ID = process.env.DISCORD_CLIENT_ID!;
-const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET!;
-const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
+const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const REDIRECT_URI = process.env.REPLIT_DOMAINS 
   ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}/api/auth/callback`
   : 'http://localhost:5000/api/auth/callback';
 
-let botClient: Client | null = null;
+let botClient = null;
 
-export async function getBotClient() {
+async function getBotClient() {
   if (botClient && botClient.isReady()) {
     return botClient;
   }
@@ -22,18 +22,12 @@ export async function getBotClient() {
   return botClient;
 }
 
-export function getAuthUrl() {
+function getAuthUrl() {
   const scopes = 'identify guilds';
   return `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent(scopes)}`;
 }
 
-export async function exchangeCodeForToken(code: string): Promise<{
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  refresh_token: string;
-  scope: string;
-}> {
+async function exchangeCodeForToken(code) {
   const response = await fetch('https://discord.com/api/oauth2/token', {
     method: 'POST',
     headers: {
@@ -55,7 +49,7 @@ export async function exchangeCodeForToken(code: string): Promise<{
   return response.json();
 }
 
-export async function refreshAccessToken(refreshToken: string) {
+async function refreshAccessToken(refreshToken) {
   const response = await fetch('https://discord.com/api/oauth2/token', {
     method: 'POST',
     headers: {
@@ -76,7 +70,7 @@ export async function refreshAccessToken(refreshToken: string) {
   return response.json();
 }
 
-export async function getDiscordUserInfo(accessToken: string) {
+async function getDiscordUserInfo(accessToken) {
   const response = await fetch('https://discord.com/api/v10/users/@me', {
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -91,7 +85,7 @@ export async function getDiscordUserInfo(accessToken: string) {
   return response.json();
 }
 
-export async function getDiscordUserGuilds(accessToken: string) {
+async function getDiscordUserGuilds(accessToken) {
   const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -106,7 +100,7 @@ export async function getDiscordUserGuilds(accessToken: string) {
   return response.json();
 }
 
-export async function checkBotInGuild(guildId: string): Promise<boolean> {
+async function checkBotInGuild(guildId) {
   try {
     const client = await getBotClient();
     const guild = await client.guilds.fetch(guildId).catch(() => null);
@@ -117,7 +111,7 @@ export async function checkBotInGuild(guildId: string): Promise<boolean> {
   }
 }
 
-export async function getDiscordGuildInfo(guildId: string) {
+async function getDiscordGuildInfo(guildId) {
   try {
     const client = await getBotClient();
     const guild = await client.guilds.fetch(guildId);
@@ -140,7 +134,7 @@ export async function getDiscordGuildInfo(guildId: string) {
   }
 }
 
-export async function getDiscordGuildChannels(guildId: string) {
+async function getDiscordGuildChannels(guildId) {
   try {
     const client = await getBotClient();
     const guild = await client.guilds.fetch(guildId);
@@ -149,11 +143,11 @@ export async function getDiscordGuildChannels(guildId: string) {
     const channelList = Array.from(channels.values())
       .filter(channel => channel !== null)
       .map(channel => ({
-        id: channel!.id,
-        name: channel!.name,
-        type: channel!.type,
-        position: 'position' in channel! ? channel!.position : undefined,
-        parentId: channel!.parentId,
+        id: channel.id,
+        name: channel.name,
+        type: channel.type,
+        position: 'position' in channel ? channel.position : undefined,
+        parentId: channel.parentId,
       }))
       .sort((a, b) => (a.position || 0) - (b.position || 0));
 
@@ -164,7 +158,7 @@ export async function getDiscordGuildChannels(guildId: string) {
   }
 }
 
-export function generateBotInviteUrl(guildId?: string): string {
+function generateBotInviteUrl(guildId) {
   const permissions = '8';
   let url = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&scope=bot+applications.commands&permissions=${permissions}`;
   
@@ -174,3 +168,16 @@ export function generateBotInviteUrl(guildId?: string): string {
   
   return url;
 }
+
+module.exports = {
+  getBotClient,
+  getAuthUrl,
+  exchangeCodeForToken,
+  refreshAccessToken,
+  getDiscordUserInfo,
+  getDiscordUserGuilds,
+  checkBotInGuild,
+  getDiscordGuildInfo,
+  getDiscordGuildChannels,
+  generateBotInviteUrl
+};

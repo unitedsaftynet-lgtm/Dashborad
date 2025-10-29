@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Server - Discord Bot Dashboard</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="dark">
+  <div class="container">
+    <header class="main-header">
+      <div class="user-info">
+        <% if (user.avatar) { %>
+          <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png" alt="<%= user.username %>" class="avatar">
+        <% } else { %>
+          <div class="avatar-placeholder"></div>
+        <% } %>
+        <span><%= user.username %></span>
+      </div>
+      <button id="theme-toggle" class="theme-toggle">
+        <svg class="sun-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </header>
+
+    <div class="server-selector">
+      <h1>Select a Server</h1>
+      <p class="subtitle">Choose a Discord server to manage your bot configuration</p>
+
+      <% if (servers.length === 0) { %>
+        <div class="empty-state">
+          <p>No servers found where you are the owner.</p>
+          <a href="https://discord.com" target="_blank" class="btn btn-secondary">Open Discord</a>
+        </div>
+      <% } else { %>
+        <div class="server-grid">
+          <% servers.forEach(server => { %>
+            <div class="server-card">
+              <div class="server-icon">
+                <% if (server.icon) { %>
+                  <img src="https://cdn.discordapp.com/icons/<%= server.id %>/<%= server.icon %>.png" alt="<%= server.name %>">
+                <% } else { %>
+                  <div class="server-icon-placeholder"><%= server.name.charAt(0) %></div>
+                <% } %>
+                <% if (server.botInServer) { %>
+                  <div class="bot-status active" title="Bot Active"></div>
+                <% } %>
+              </div>
+              <h3><%= server.name %></h3>
+              <div class="server-badges">
+                <span class="badge">Owner</span>
+                <% if (server.botInServer) { %>
+                  <span class="badge badge-success">Bot Active</span>
+                <% } %>
+              </div>
+              <% if (server.botInServer) { %>
+                <a href="/dashboard/<%= server.id %>" class="btn btn-primary">Manage</a>
+              <% } else { %>
+                <button onclick="inviteBot('<%= server.id %>')" class="btn btn-outline">Invite Bot</button>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script>
+    async function inviteBot(serverId) {
+      const response = await fetch(`/api/bot-invite/${serverId}`);
+      const data = await response.json();
+      window.open(data.url, '_blank');
+    }
+  </script>
+</body>
+</html>
