@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Config - <%= serverName %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="dark">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <a href="/servers" class="sidebar-logo">
+        <svg width="32" height="32" viewBox="0 0 71 55" fill="#5865F2">
+          <path d="M60.1045 4.8978C55.5792 2.8214 50.7265 1.2916 45.6527 0.41542C45.5603 0.39851 45.468 0.440769 45.4204 0.525289C44.7963 1.6353 44.105 3.0834 43.6209 4.2216C38.1637 3.4046 32.7345 3.4046 27.3892 4.2216C26.905 3.0581 26.1886 1.6353 25.5617 0.525289C25.5141 0.443589 25.4218 0.40133 25.3294 0.41542C20.2584 1.2888 15.4057 2.8186 10.8776 4.8978C10.8384 4.9147 10.8048 4.9429 10.7825 4.9795C1.57795 18.7309 -0.943561 32.1443 0.293408 45.3914C0.299005 45.4562 0.335386 45.5182 0.385761 45.5576C6.45866 50.0174 12.3413 52.7249 18.1147 54.5195C18.2071 54.5477 18.305 54.5139 18.3638 54.4378C19.7295 52.5728 20.9469 50.6063 21.9907 48.5383C22.0523 48.4172 21.9935 48.2735 21.8676 48.2256C19.9366 47.4931 18.0979 46.6 16.3292 45.5858C16.1893 45.5041 16.1781 45.304 16.3068 45.2082C16.679 44.9293 17.0513 44.6391 17.4067 44.3461C17.471 44.2926 17.5606 44.2813 17.6362 44.3151C29.2558 49.6202 41.8354 49.6202 53.3179 44.3151C53.3935 44.2785 53.4831 44.2898 53.5502 44.3433C53.9057 44.6363 54.2779 44.9293 54.6529 45.2082C54.7816 45.304 54.7732 45.5041 54.6333 45.5858C52.8646 46.6197 51.0259 47.4931 49.0921 48.2228C48.9662 48.2707 48.9102 48.4172 48.9718 48.5383C50.038 50.6034 51.2554 52.5699 52.5959 54.435C52.6519 54.5139 52.7526 54.5477 52.845 54.5195C58.6464 52.7249 64.529 50.0174 70.6019 45.5576C70.6551 45.5182 70.6887 45.459 70.6943 45.3942C72.1747 30.0791 68.2147 16.7757 60.1968 4.9823C60.1772 4.9429 60.1437 4.9147 60.1045 4.8978ZM23.7259 37.3253C20.2276 37.3253 17.3451 34.1136 17.3451 30.1693C17.3451 26.225 20.1717 23.0133 23.7259 23.0133C27.308 23.0133 30.1626 26.2532 30.1066 30.1693C30.1066 34.1136 27.28 37.3253 23.7259 37.3253ZM47.3178 37.3253C43.8196 37.3253 40.9371 34.1136 40.9371 30.1693C40.9371 26.225 43.7636 23.0133 47.3178 23.0133C50.9 23.0133 53.7545 26.2532 53.6986 30.1693C53.6986 34.1136 50.9 37.3253 47.3178 37.3253Z"/>
+        </svg>
+        <span>Bot Dashboard</span>
+      </a>
+    </div>
+    <nav class="nav-menu">
+      <div class="nav-section">
+        <div class="nav-section-title">Overview</div>
+        <a href="/dashboard/<%= serverId %>" class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          Dashboard
+        </a>
+        <a href="/analytics/<%= serverId %>" class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          Analytics
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Configuration</div>
+        <a href="/config/main/<%= serverId %>" class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          Main Config
+        </a>
+        <a href="/config/channels/<%= serverId %>" class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+          </svg>
+          Channels
+        </a>
+        <a href="/config/other/<%= serverId %>" class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+          </svg>
+          Other Settings
+        </a>
+        <a href="/config/premium/<%= serverId %>" class="nav-item active">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+          </svg>
+          Premium
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div class="page-header">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h1 class="page-title">Premium Features</h1>
+          <p class="page-description">Unlock advanced features and customization options</p>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <svg class="sun-icon" width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+          </svg>
+          <svg class="moon-icon" width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); padding: 2rem; border-radius: 16px; margin-bottom: 2rem; text-align: center; color: #000;">
+        <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
+          <svg width="48" height="48" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"/>
+          </svg>
+        </div>
+        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 0.5rem;">Upgrade to Premium</h2>
+        <p style="font-size: 1.1rem; opacity: 0.9;">Unlock powerful features to supercharge your server's growth</p>
+      </div>
+
+      <form action="/api/config/premium/<%= serverId %>" method="POST">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Customization</h2>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="embedColor">Embed Color</label>
+            <div class="color-picker-wrapper">
+              <input 
+                type="color" 
+                id="embedColor" 
+                name="embedColor" 
+                value="<%= config.premiumConfig?.embedColor || '#5865F2' %>"
+                style="width: 60px; height: 50px; border: 2px solid var(--border); border-radius: 10px; cursor: pointer;"
+              >
+              <input 
+                type="text" 
+                class="form-input" 
+                value="<%= config.premiumConfig?.embedColor || '#5865F2' %>"
+                readonly
+                style="flex: 1;"
+              >
+            </div>
+            <span class="form-help">Custom color for embed messages sent by the bot</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Automation Features</h2>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-switch">
+              <input 
+                type="checkbox" 
+                name="autoApprove" 
+                <%= config.premiumConfig?.autoApprove ? 'checked' : '' %>
+              >
+              <span class="switch"></span>
+              <div>
+                <div style="font-weight: 600;">Auto-Approve Partnerships</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Automatically approve partnership requests from trusted servers</div>
+              </div>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-switch">
+              <input 
+                type="checkbox" 
+                name="autoBump" 
+                <%= config.premiumConfig?.autoBump ? 'checked' : '' %>
+              >
+              <span class="switch"></span>
+              <div>
+                <div style="font-weight: 600;">Auto-Bump</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Automatically bump your server at optimal times for maximum visibility</div>
+              </div>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-switch">
+              <input 
+                type="checkbox" 
+                name="autoMass" 
+                <%= config.premiumConfig?.autoMass ? 'checked' : '' %>
+              >
+              <span class="switch"></span>
+              <div>
+                <div style="font-weight: 600;">Auto-Mass DM</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Send automated announcements to partnership partners</div>
+              </div>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-switch">
+              <input 
+                type="checkbox" 
+                name="autoBurst" 
+                <%= config.premiumConfig?.autoBurst ? 'checked' : '' %>
+              >
+              <span class="switch"></span>
+              <div>
+                <div style="font-weight: 600;">Auto-Burst Promotion</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Boost your server's visibility with burst promotion campaigns</div>
+              </div>
+            </label>
+          </div>
+
+          <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+            <a href="/dashboard/<%= serverId %>" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <div class="card" style="background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary)); border: 2px solid var(--border);">
+        <div class="card-header">
+          <h2 class="card-title">Premium Benefits</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+          <div style="display: flex; gap: 1rem;">
+            <div style="flex-shrink: 0; width: 40px; height: 40px; background: linear-gradient(135deg, #5865F2, #4752C4); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+              <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div>
+              <div style="font-weight: 700; margin-bottom: 0.25rem;">24/7 Priority Support</div>
+              <div style="font-size: 0.9rem; color: var(--text-secondary);">Get help faster with dedicated support</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 1rem;">
+            <div style="flex-shrink: 0; width: 40px; height: 40px; background: linear-gradient(135deg, #10B981, #059669); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+              <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
+                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+              </svg>
+            </div>
+            <div>
+              <div style="font-weight: 700; margin-bottom: 0.25rem;">Advanced Analytics</div>
+              <div style="font-size: 0.9rem; color: var(--text-secondary);">Detailed insights and growth metrics</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 1rem;">
+            <div style="flex-shrink: 0; width: 40px; height: 40px; background: linear-gradient(135deg, #F59E0B, #D97706); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+              <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+            </div>
+            <div>
+              <div style="font-weight: 700; margin-bottom: 0.25rem;">Boosted Visibility</div>
+              <div style="font-size: 0.9rem; color: var(--text-secondary);">Premium badge and priority listing</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 1rem;">
+            <div style="flex-shrink: 0; width: 40px; height: 40px; background: linear-gradient(135deg, #8B5CF6, #7C3AED); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+              <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+              </svg>
+            </div>
+            <div>
+              <div style="font-weight: 700; margin-bottom: 0.25rem;">Unlimited Partnerships</div>
+              <div style="font-size: 0.9rem; color: var(--text-secondary);">No limits on partnership requests</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script>
+    const colorInput = document.getElementById('embedColor');
+    const colorText = colorInput.nextElementSibling;
+    colorInput.addEventListener('input', (e) => {
+      colorText.value = e.target.value;
+    });
+  </script>
+</body>
+</html>

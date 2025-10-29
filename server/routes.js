@@ -60,7 +60,11 @@ function registerRoutes(app) {
     });
   });
 
-  app.get('/', requireAuth, async (req, res) => {
+  app.get('/', requireAuth, (req, res) => {
+    res.redirect('/servers');
+  });
+
+  app.get('/servers', requireAuth, async (req, res) => {
     try {
       const guilds = await getDiscordUserGuilds(req.session.accessToken);
       const ownedGuilds = guilds.filter(guild => guild.owner === true);
@@ -101,7 +105,9 @@ function registerRoutes(app) {
 
       res.render('dashboard', {
         user: { username: req.session.username, avatar: req.session.avatar },
-        server: serverInfo,
+        serverId,
+        serverName: serverInfo.name,
+        memberCount: serverInfo.approximate_member_count || 0,
         config,
         analytics
       });
@@ -119,7 +125,8 @@ function registerRoutes(app) {
 
       res.render('analytics', {
         user: { username: req.session.username, avatar: req.session.avatar },
-        server: serverInfo,
+        serverId,
+        serverName: serverInfo.name,
         analytics
       });
     } catch (error) {
@@ -128,7 +135,7 @@ function registerRoutes(app) {
     }
   });
 
-  app.get('/config/:serverId/:type', requireAuth, async (req, res) => {
+  app.get('/config/:type/:serverId', requireAuth, async (req, res) => {
     try {
       const { serverId, type } = req.params;
       const config = await storage.getServerConfig(serverId);
@@ -141,7 +148,8 @@ function registerRoutes(app) {
 
       res.render(`config-${type}`, {
         user: { username: req.session.username, avatar: req.session.avatar },
-        server: serverInfo,
+        serverId,
+        serverName: serverInfo.name,
         config,
         channels
       });
@@ -151,44 +159,52 @@ function registerRoutes(app) {
     }
   });
 
-  app.post('/config/:serverId/main', requireAuth, async (req, res) => {
+  app.post('/api/config/main/:serverId', requireAuth, async (req, res) => {
     try {
       const { serverId } = req.params;
       await storage.updateMainConfig({ serverId, ...req.body });
-      res.redirect(`/config/${serverId}/main`);
+      res.redirect(`/config/main/${serverId}`);
     } catch (error) {
       console.error('Error updating main config:', error);
       res.status(400).send('Failed to update configuration');
     }
   });
 
-  app.post('/config/:serverId/channels', requireAuth, async (req, res) => {
+  app.post('/api/config/channels/:serverId', requireAuth, async (req, res) => {
     try {
       const { serverId } = req.params;
       await storage.updateChannelConfig({ serverId, ...req.body });
-      res.redirect(`/config/${serverId}/channels`);
+      res.redirect(`/config/channels/${serverId}`);
     } catch (error) {
       console.error('Error updating channel config:', error);
       res.status(400).send('Failed to update configuration');
     }
   });
 
-  app.post('/config/:serverId/other', requireAuth, async (req, res) => {
+  app.post('/api/config/other/:serverId', requireAuth, async (req, res) => {
     try {
       const { serverId } = req.params;
       await storage.updateOtherConfig({ serverId, ...req.body });
-      res.redirect(`/config/${serverId}/other`);
+      res.redirect(`/config/other/${serverId}`);
     } catch (error) {
       console.error('Error updating other config:', error);
       res.status(400).send('Failed to update configuration');
     }
   });
 
-  app.post('/config/:serverId/premium', requireAuth, async (req, res) => {
+  app.post('/api/config/premium/:serverId', requireAuth, async (req, res) => {
     try {
       const { serverId } = req.params;
-      await storage.updatePremiumConfig({ serverId, ...req.body });
-      res.redirect(`/config/${serverId}/premium`);
+      const premiumData = {
+        serverId,
+        embedColor: req.body.embedColor,
+        autoApprove: req.body.autoApprove === 'on',
+        autoBump: req.body.autoBump === 'on',
+        autoMass: req.body.autoMass === 'on',
+        autoBurst: req.body.autoBurst === 'on'
+      };
+      await storage.updatePremiumConfig(premiumData);
+      res.redirect(`/config/premium/${serverId}`);
     } catch (error) {
       console.error('Error updating premium config:', error);
       res.status(400).send('Failed to update configuration');
