@@ -47,6 +47,11 @@ The application uses Replit Discord Connector for authentication. This provides:
 - Server selection and configuration management
 - Suitable for personal bot dashboard use
 
+**⚠️ IMPORTANT - Discord Integration Required:**
+The Discord Connector integration needs to be set up for the app to function properly. The connector integration was dismissed during migration. To enable full functionality:
+1. Set up the Discord Connector from the integrations panel, OR
+2. Implement alternative Discord OAuth2 with bot credentials stored as secrets
+
 **For Multi-User Support:**
 If you need multiple users to log in with their own Discord accounts, you would need:
 1. Implement Discord OAuth2 authorization code flow
