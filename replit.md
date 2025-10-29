@@ -9,10 +9,10 @@ This is a full-stack web application that provides a comprehensive dashboard for
 ## Tech Stack
 
 - **Frontend**: React with TypeScript, Wouter (routing), TanStack Query (data fetching)
-- **Backend**: Express.js, Discord.js
-- **Styling**: Tailwind CSS, Shadcn UI components
+- **Backend**: Express.js, Discord.js, Express Session
+- **Styling**: Tailwind CSS, Shadcn UI components (with Dark Mode support)
 - **Storage**: In-memory storage (MemStorage)
-- **Authentication**: Discord OAuth2 integration via Replit Connectors
+- **Authentication**: Discord OAuth2 (Standard Authorization Code Flow) with bot credentials
 
 ## Current Implementation Status
 
@@ -24,11 +24,19 @@ This is a full-stack web application that provides a comprehensive dashboard for
 - ✅ Sidebar navigation with server branding
 - ✅ Form components with validation and error handling
 - ✅ Responsive design implementation
-- ✅ **Form state persistence** - All config forms now correctly load and display saved values
+- ✅ **Form state persistence** - All config forms correctly load and display saved values
+- ✅ **Dark Mode** - Full light/dark theme support with toggle button
+- ✅ **Theme Provider** - Context-based theme management with localStorage persistence
+- ✅ **Login Page** - Discord OAuth login interface
 
 **Backend:**
+- ✅ Discord OAuth2 authentication flow (standard authorization code grant)
+- ✅ Session management with express-session
 - ✅ Discord API integration (user info, servers, channels, server details)
-- ✅ All API endpoints for CRUD operations
+- ✅ Bot presence detection in servers
+- ✅ Server filtering (only owned servers shown)
+- ✅ Bot invite URL generation
+- ✅ All API endpoints for CRUD operations with auth protection
 - ✅ Analytics data generation
 - ✅ Configuration storage and caching
 
@@ -36,35 +44,51 @@ This is a full-stack web application that provides a comprehensive dashboard for
 - ✅ All pages connected to backend APIs
 - ✅ Loading states and error handling
 - ✅ Form validation with real-time feedback
+- ✅ Authentication guards on all protected routes
 - ✅ Application running successfully
 
-### 🔄 Authentication Approach
+### 🔐 Authentication System
 
-**Current Implementation:**
-The application uses Replit Discord Connector for authentication. This provides:
-- Single-user authentication (the connector owner)
-- Access to all servers the authenticated user is in
-- Server selection and configuration management
-- Suitable for personal bot dashboard use
+**Current Implementation (NEW!):**
+The application uses standard Discord OAuth2 Authorization Code Flow with your Discord bot credentials. This provides:
+- ✅ Multi-user authentication - any Discord user can log in
+- ✅ Session-based authentication with express-session
+- ✅ Server ownership filtering - only servers the user owns are shown
+- ✅ Bot presence detection - shows which servers have the bot installed
+- ✅ Bot invite functionality - easy one-click bot invitation to servers
 
-**⚠️ IMPORTANT - Discord Integration Required:**
-The Discord Connector integration needs to be set up for the app to function properly. The connector integration was dismissed during migration. To enable full functionality:
-1. Set up the Discord Connector from the integrations panel, OR
-2. Implement alternative Discord OAuth2 with bot credentials stored as secrets
+**Required Environment Variables:**
+- `DISCORD_CLIENT_ID` - Your Discord application's client ID
+- `DISCORD_CLIENT_SECRET` - Your Discord application's client secret  
+- `DISCORD_BOT_TOKEN` - Your Discord bot token
+- `SESSION_SECRET` - (Optional) Custom session secret for production
 
-**For Multi-User Support:**
-If you need multiple users to log in with their own Discord accounts, you would need:
-1. Implement Discord OAuth2 authorization code flow
-2. Add session management (cookies + session store)
-3. Per-user token storage and scoping
-4. User-specific configuration isolation
+**Authentication Flow:**
+1. User clicks "Sign in with Discord" on the login page
+2. Redirected to Discord for OAuth approval
+3. Discord redirects back to `/api/auth/callback` with authorization code
+4. Backend exchanges code for access token and stores in session
+5. User can now access all protected routes with their Discord identity
+
+**Server Filtering:**
+- Only servers where the authenticated user is the **owner** are displayed
+- Servers are sorted: bot-present servers first, then bot-absent servers
+- Each server shows:
+  - Owner badge
+  - Bot active status (if bot is in the server)
+  - "Manage" button (if bot is present) 
+  - "Invite Bot" button (if bot is not present)
 
 ## Features
 
 ### Authentication & Server Selection
-- Discord authentication via Replit Connector
-- Server selector showing all servers user has access to
+- Discord OAuth2 authentication with bot credentials
+- Login page with "Sign in with Discord" button
+- Server selector showing only servers where user is the owner
+- Servers sorted by bot presence (bot-present servers first)
+- Bot status badges and invite functionality
 - Persistent server selection via localStorage
+- Session-based authentication with automatic token refresh
 
 ### Main Dashboard
 - Overview statistics (Growth, Sent/Received Requests, Reputation Score)
@@ -175,7 +199,46 @@ Following Discord-inspired design with:
 - Form validation and user feedback
 - Loading states and error handling
 
+### Dark Mode System
+- Light and dark themes with smooth transitions
+- Theme toggle button in header (sun/moon icon)
+- Theme preference stored in localStorage
+- Full CSS variable system for theming
+- All components support both light and dark modes
+
 ## Recent Changes
+
+### Latest Updates - OAuth2 Authentication & Dark Mode (October 29, 2025)
+- **Replaced Replit Connector with standard Discord OAuth2 flow**
+  - Implemented authorization code grant flow
+  - Added session management with express-session
+  - Created login page with Discord OAuth button
+  - Added authentication guards on all protected routes
+  - Implemented automatic token refresh capability
+
+- **Server Filtering & Bot Management**
+  - Filter servers to show only those where user is the owner
+  - Check bot presence in each server using Discord.js
+  - Sort servers: bot-present first, then bot-absent
+  - Added "Invite Bot" button for servers without the bot
+  - Added "Manage" button for servers with the bot
+  - Visual indicators (badges, icons) for bot status and ownership
+
+- **Dark Mode Implementation**
+  - Created ThemeProvider with React Context
+  - Added theme toggle button in header
+  - Theme persists in localStorage
+  - Default theme is dark mode
+  - All existing CSS already supports both themes
+
+- **Backend Enhancements**
+  - New endpoints: `/api/auth/url`, `/api/auth/callback`, `/api/auth/logout`, `/api/auth/status`
+  - New endpoint: `/api/discord/bot-invite/:serverId?` for generating bot invite URLs
+  - Updated all Discord endpoints to use session-based auth
+  - Added `requireAuth` middleware for protected routes
+  - Bot client connection management for server checks
+
+## Recent Changes (Previous)
 
 ### Latest Updates - Form State Persistence
 - **Fixed critical form loading bug**: Added `useEffect` hooks to all config pages

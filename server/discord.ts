@@ -1,58 +1,85 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 
-let connectionSettings: any;
+const CLIENT_ID = process.env.DISCORD_CLIENT_ID!;
+const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET!;
+const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
+const REDIRECT_URI = process.env.REPLIT_DOMAINS 
+  ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}/api/auth/callback`
+  : 'http://localhost:5000/api/auth/callback';
 
-async function getAccessToken() {
-  if (connectionSettings && connectionSettings.settings.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
-    return connectionSettings.settings.access_token;
-  }
-  
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
-  const xReplitToken = process.env.REPL_IDENTITY 
-    ? 'repl ' + process.env.REPL_IDENTITY 
-    : process.env.WEB_REPL_RENEWAL 
-    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-    : null;
+let botClient: Client | null = null;
 
-  if (!xReplitToken) {
-    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
+export async function getBotClient() {
+  if (botClient && botClient.isReady()) {
+    return botClient;
   }
 
-  connectionSettings = await fetch(
-    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=discord',
-    {
-      headers: {
-        'Accept': 'application/json',
-        'X_REPLIT_TOKEN': xReplitToken
-      }
-    }
-  ).then(res => res.json()).then(data => data.items?.[0]);
-
-  const accessToken = connectionSettings?.settings?.access_token || connectionSettings.settings?.oauth?.credentials?.access_token;
-
-  if (!connectionSettings || !accessToken) {
-    throw new Error('Discord not connected');
-  }
-  return accessToken;
-}
-
-export async function getUncachableDiscordClient() {
-  const token = await getAccessToken();
-
-  const client = new Client({
+  botClient = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
   });
 
-  await client.login(token);
-  return client;
+  await botClient.login(BOT_TOKEN);
+  return botClient;
 }
 
-export async function getDiscordUserInfo() {
-  const token = await getAccessToken();
-  
+export function getAuthUrl() {
+  const scopes = 'identify guilds';
+  return `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent(scopes)}`;
+}
+
+export async function exchangeCodeForToken(code: string): Promise<{
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token: string;
+  scope: string;
+}> {
+  const response = await fetch('https://discord.com/api/oauth2/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET,
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: REDIRECT_URI,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to exchange code for token');
+  }
+
+  return response.json();
+}
+
+export async function refreshAccessToken(refreshToken: string) {
+  const response = await fetch('https://discord.com/api/oauth2/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET,
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to refresh token');
+  }
+
+  return response.json();
+}
+
+export async function getDiscordUserInfo(accessToken: string) {
   const response = await fetch('https://discord.com/api/v10/users/@me', {
     headers: {
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
   });
@@ -64,12 +91,10 @@ export async function getDiscordUserInfo() {
   return response.json();
 }
 
-export async function getDiscordUserGuilds() {
-  const token = await getAccessToken();
-  
+export async function getDiscordUserGuilds(accessToken: string) {
   const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
     headers: {
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
   });
@@ -81,9 +106,20 @@ export async function getDiscordUserGuilds() {
   return response.json();
 }
 
+export async function checkBotInGuild(guildId: string): Promise<boolean> {
+  try {
+    const client = await getBotClient();
+    const guild = await client.guilds.fetch(guildId).catch(() => null);
+    return guild !== null;
+  } catch (error) {
+    console.error('Error checking bot in guild:', error);
+    return false;
+  }
+}
+
 export async function getDiscordGuildInfo(guildId: string) {
   try {
-    const client = await getUncachableDiscordClient();
+    const client = await getBotClient();
     const guild = await client.guilds.fetch(guildId);
     
     const info = {
@@ -97,7 +133,6 @@ export async function getDiscordGuildInfo(guildId: string) {
       description: guild.description,
     };
 
-    await client.destroy();
     return info;
   } catch (error) {
     console.error('Error fetching guild info:', error);
@@ -107,7 +142,7 @@ export async function getDiscordGuildInfo(guildId: string) {
 
 export async function getDiscordGuildChannels(guildId: string) {
   try {
-    const client = await getUncachableDiscordClient();
+    const client = await getBotClient();
     const guild = await client.guilds.fetch(guildId);
     const channels = await guild.channels.fetch();
     
@@ -122,10 +157,20 @@ export async function getDiscordGuildChannels(guildId: string) {
       }))
       .sort((a, b) => (a.position || 0) - (b.position || 0));
 
-    await client.destroy();
     return channelList;
   } catch (error) {
     console.error('Error fetching guild channels:', error);
     throw error;
   }
+}
+
+export function generateBotInviteUrl(guildId?: string): string {
+  const permissions = '8';
+  let url = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&scope=bot+applications.commands&permissions=${permissions}`;
+  
+  if (guildId) {
+    url += `&guild_id=${guildId}&disable_guild_select=true`;
+  }
+  
+  return url;
 }

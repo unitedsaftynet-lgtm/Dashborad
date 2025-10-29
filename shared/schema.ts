@@ -19,6 +19,7 @@ export const discordServerSchema = z.object({
   owner: z.boolean(),
   permissions: z.string(),
   features: z.array(z.string()),
+  botInServer: z.boolean().default(false),
 });
 
 export type DiscordServer = z.infer<typeof discordServerSchema>;

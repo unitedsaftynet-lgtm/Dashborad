@@ -10,17 +10,70 @@ import {
   discordServerSchema,
 } from "@shared/schema";
 import {
+  getAuthUrl,
+  exchangeCodeForToken,
+  refreshAccessToken,
   getDiscordUserInfo,
   getDiscordUserGuilds,
   getDiscordGuildInfo,
   getDiscordGuildChannels,
+  checkBotInGuild,
+  generateBotInviteUrl,
 } from "./discord";
 
+function requireAuth(req: any, res: any, next: any) {
+  if (!req.session.accessToken || !req.session.userId) {
+    return res.status(401).json({ error: "Not authenticated", needsAuth: true });
+  }
+  next();
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Discord authentication and user info
-  app.get("/api/discord/user", async (req, res) => {
+  app.get("/api/auth/url", (req, res) => {
+    const authUrl = getAuthUrl();
+    res.json({ url: authUrl });
+  });
+
+  app.get("/api/auth/callback", async (req, res) => {
     try {
-      const userInfo = await getDiscordUserInfo();
+      const { code } = req.query;
+      
+      if (!code || typeof code !== 'string') {
+        return res.redirect('/?error=no_code');
+      }
+
+      const tokenData = await exchangeCodeForToken(code);
+      const userInfo = await getDiscordUserInfo(tokenData.access_token);
+
+      req.session.accessToken = tokenData.access_token;
+      req.session.refreshToken = tokenData.refresh_token;
+      req.session.tokenExpiry = Date.now() + tokenData.expires_in * 1000;
+      req.session.userId = userInfo.id;
+
+      res.redirect('/');
+    } catch (error) {
+      console.error("OAuth callback error:", error);
+      res.redirect('/?error=auth_failed');
+    }
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Failed to logout" });
+      }
+      res.json({ success: true });
+    });
+  });
+
+  app.get("/api/auth/status", (req, res) => {
+    const isAuthenticated = !!(req.session.accessToken && req.session.userId);
+    res.json({ isAuthenticated });
+  });
+
+  app.get("/api/discord/user", requireAuth, async (req, res) => {
+    try {
+      const userInfo = await getDiscordUserInfo(req.session.accessToken!);
       const parsedUser = discordUserSchema.parse(userInfo);
       res.json(parsedUser);
     } catch (error) {
@@ -29,11 +82,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user's Discord servers
-  app.get("/api/discord/servers", async (req, res) => {
+  app.get("/api/discord/servers", requireAuth, async (req, res) => {
     try {
-      const guilds = await getDiscordUserGuilds();
-      const parsedGuilds = guilds.map((guild: any) => discordServerSchema.parse(guild));
+      const guilds = await getDiscordUserGuilds(req.session.accessToken!);
+      
+      const ownedGuilds = guilds.filter((guild: any) => guild.owner === true);
+      
+      const guildsWithBotStatus = await Promise.all(
+        ownedGuilds.map(async (guild: any) => {
+          const botInServer = await checkBotInGuild(guild.id);
+          return {
+            ...guild,
+            botInServer,
+          };
+        })
+      );
+
+      guildsWithBotStatus.sort((a: any, b: any) => {
+        if (a.botInServer && !b.botInServer) return -1;
+        if (!a.botInServer && b.botInServer) return 1;
+        return 0;
+      });
+
+      const parsedGuilds = guildsWithBotStatus.map((guild: any) => discordServerSchema.parse(guild));
       res.json(parsedGuilds);
     } catch (error) {
       console.error("Error fetching Discord servers:", error);
@@ -41,12 +112,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get specific server info
-  app.get("/api/discord/server-info/:serverId", async (req, res) => {
+  app.get("/api/discord/server-info/:serverId", requireAuth, async (req, res) => {
     try {
       const { serverId } = req.params;
       
-      // Check cache first
       let serverInfo = await storage.getCachedServerInfo(serverId);
       
       if (!serverInfo) {
@@ -62,12 +131,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get server channels
-  app.get("/api/discord/channels/:serverId", async (req, res) => {
+  app.get("/api/discord/channels/:serverId", requireAuth, async (req, res) => {
     try {
       const { serverId } = req.params;
       
-      // Check cache first
       let channels = await storage.getCachedChannels(serverId);
       
       if (!channels) {
@@ -82,8 +149,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get server configuration
-  app.get("/api/config/:serverId", async (req, res) => {
+  app.get("/api/discord/bot-invite/:serverId?", (req, res) => {
+    const { serverId } = req.params;
+    const inviteUrl = generateBotInviteUrl(serverId);
+    res.json({ url: inviteUrl });
+  });
+
+  app.get("/api/config/:serverId", requireAuth, async (req, res) => {
     try {
       const { serverId } = req.params;
       const config = await storage.getServerConfig(serverId);
@@ -100,8 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update main config
-  app.post("/api/config/main/:serverId", async (req, res) => {
+  app.post("/api/config/main/:serverId", requireAuth, async (req, res) => {
     try {
       const { serverId } = req.params;
       const validatedData = mainConfigSchema.parse(req.body);
@@ -118,8 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update channel config
-  app.post("/api/config/channels/:serverId", async (req, res) => {
+  app.post("/api/config/channels/:serverId", requireAuth, async (req, res) => {
     try {
       const { serverId } = req.params;
       const validatedData = channelConfigSchema.parse(req.body);
@@ -136,8 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update other config
-  app.post("/api/config/other/:serverId", async (req, res) => {
+  app.post("/api/config/other/:serverId", requireAuth, async (req, res) => {
     try {
       const { serverId } = req.params;
       const validatedData = otherConfigSchema.parse(req.body);
@@ -154,8 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update premium config
-  app.post("/api/config/premium/:serverId", async (req, res) => {
+  app.post("/api/config/premium/:serverId", requireAuth, async (req, res) => {
     try {
       const { serverId } = req.params;
       const validatedData = premiumConfigSchema.parse(req.body);
@@ -172,8 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get analytics data
-  app.get("/api/analytics/:serverId", async (req, res) => {
+  app.get("/api/analytics/:serverId", requireAuth, async (req, res) => {
     try {
       const { serverId } = req.params;
       const analytics = await storage.getAnalytics(serverId);

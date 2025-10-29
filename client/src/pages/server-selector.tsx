@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Shield, CheckCircle2, Plus } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 import type { DiscordServer } from "@shared/schema";
 
@@ -84,31 +85,68 @@ export default function ServerSelector({ onSelectServer }: ServerSelectorProps) 
           {servers.map((server) => (
             <Card
               key={server.id}
-              className="p-6 hover-elevate active-elevate-2 cursor-pointer transition-all"
-              onClick={() => onSelectServer(server.id)}
+              className="p-6 transition-all relative"
               data-testid={`card-server-${server.id}`}
             >
               <div className="flex flex-col items-center space-y-4">
-                <div className="h-20 w-20 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden">
-                  {server.icon ? (
-                    <img
-                      src={`https://cdn.discordapp.com/icons/${server.id}/${server.icon}.png`}
-                      alt={server.name}
-                      className="h-20 w-20 object-cover"
-                    />
-                  ) : (
-                    <SiDiscord className="h-10 w-10 text-primary" />
+                <div className="relative">
+                  <div className="h-20 w-20 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden">
+                    {server.icon ? (
+                      <img
+                        src={`https://cdn.discordapp.com/icons/${server.id}/${server.icon}.png`}
+                        alt={server.name}
+                        className="h-20 w-20 object-cover"
+                      />
+                    ) : (
+                      <SiDiscord className="h-10 w-10 text-primary" />
+                    )}
+                  </div>
+                  {server.botInServer && (
+                    <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1">
+                      <CheckCircle2 className="h-4 w-4 text-white" />
+                    </div>
                   )}
                 </div>
-                <div className="text-center space-y-1">
+                <div className="text-center space-y-2 w-full">
                   <h3 className="font-semibold line-clamp-2" data-testid={`text-servername-${server.id}`}>
                     {server.name}
                   </h3>
-                  {server.owner && (
-                    <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                      <Shield className="h-3 w-3" />
-                      <span>Owner</span>
-                    </div>
+                  <div className="flex items-center justify-center gap-2 flex-wrap">
+                    {server.owner && (
+                      <Badge variant="secondary" className="text-xs">
+                        <Shield className="h-3 w-3 mr-1" />
+                        Owner
+                      </Badge>
+                    )}
+                    {server.botInServer && (
+                      <Badge variant="default" className="text-xs bg-green-600">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        Bot Active
+                      </Badge>
+                    )}
+                  </div>
+                  {server.botInServer ? (
+                    <Button
+                      className="w-full"
+                      onClick={() => onSelectServer(server.id)}
+                      data-testid={`button-manage-${server.id}`}
+                    >
+                      Manage
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        fetch(`/api/discord/bot-invite/${server.id}`)
+                          .then(res => res.json())
+                          .then(data => window.open(data.url, '_blank'));
+                      }}
+                      data-testid={`button-invite-${server.id}`}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Invite Bot
+                    </Button>
                   )}
                 </div>
               </div>
